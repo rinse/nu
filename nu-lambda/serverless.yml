@@ -1,0 +1,34 @@
+service: nu-lambda
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage, 'dev'}
+  region: ap-northeast-1
+  deploymentBucket:
+    name: nu-deployment-${self:provider.region}
+
+functions:
+  message:
+    name: nu-lambda
+    handler: build/handler.message
+    events:
+      - http:
+          path: api/v1/message
+          method: get
+          integration: lambda
+          cors: true
+
+resources:
+  Outputs:
+      DomainApiGateway:
+        Description: "Domain of API Gateway"
+        Value:
+          Fn::Join:
+            - "."
+            - - Ref: ApiGatewayRestApi
+              - "execute-api"
+              - ${self:provider.region}
+              - "amazonaws.com"
+        Export:
+          Name: DomainApiGateway
